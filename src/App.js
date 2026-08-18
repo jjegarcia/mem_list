@@ -38,11 +38,6 @@ export function App() {
       }),
       React.createElement(
         'button',
-        { id: 'clearButton', type: 'button', onClick: clearList },
-        'Clear List'
-      ),
-      React.createElement(
-        'button',
         { id: 'addButton', type: 'button', onClick: addItem },
         'Add'
       )
@@ -52,6 +47,11 @@ export function App() {
       'ul',
       { id: 'itemList' },
       items.map((item, index) => React.createElement('li', { key: `${item}-${index}` }, item))
+    ),
+    React.createElement(
+      'button',
+      { id: 'clearButton', type: 'button', onClick: clearList, className: 'clear-btn' },
+      'Clear List'
     )
   );
 }
