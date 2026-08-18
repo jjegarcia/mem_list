@@ -11,6 +11,10 @@ export function App() {
     setValue('');
   }
 
+  function clearList() {
+    setItems([]);
+  }
+
   function handleKeyDown(event) {
     if (event.key === 'Enter') {
       addItem();
@@ -32,6 +36,11 @@ export function App() {
         placeholder: 'Type something...',
         'aria-label': 'Text field',
       }),
+      React.createElement(
+        'button',
+        { id: 'clearButton', type: 'button', onClick: clearList },
+        'Clear List'
+      ),
       React.createElement(
         'button',
         { id: 'addButton', type: 'button', onClick: addItem },
