@@ -1,0 +1,8 @@
+{
+  "name": "mem_list",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Static React demo for adding list items"
+}
+
