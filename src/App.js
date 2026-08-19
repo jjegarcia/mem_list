@@ -1,8 +1,8 @@
-function MemoListPanel({ side, suffix }) {
+function MemoListPanel({ side, suffix, items, setItems, hintText, validationItems, validationMessage }) {
   const { useState } = React;
   const [value, setValue] = useState('');
-  const [items, setItems] = useState([]);
   const [isListHidden, setIsListHidden] = useState(false);
+  const [errorMessage, setErrorMessage] = useState('');
   const panelClassName = `memo-panel memo-panel-${side}`;
   const memoInputId = suffix ? `memoInput-${suffix}` : 'memoInput';
   const addButtonId = suffix ? `addButton-${suffix}` : 'addButton';
@@ -14,12 +14,19 @@ function MemoListPanel({ side, suffix }) {
     const trimmed = value.trim();
     if (!trimmed) return;
 
+    if (validationItems && !validationItems.includes(trimmed)) {
+      setErrorMessage(validationMessage);
+      return;
+    }
+
     setItems((currentItems) => [...currentItems, trimmed]);
     setValue('');
+    setErrorMessage('');
   }
 
   function clearList() {
     setItems([]);
+    setErrorMessage('');
   }
 
   function handleListVisibilityChange(event) {
@@ -42,7 +49,12 @@ function MemoListPanel({ side, suffix }) {
         id: memoInputId,
         type: 'text',
         value,
-        onChange: (event) => setValue(event.target.value),
+        onChange: (event) => {
+          setValue(event.target.value);
+          if (errorMessage) {
+            setErrorMessage('');
+          }
+        },
         onKeyDown: handleKeyDown,
         placeholder: 'Type something...',
         'aria-label': 'Text field',
@@ -53,7 +65,8 @@ function MemoListPanel({ side, suffix }) {
         'Add'
       )
     ),
-    React.createElement('div', { className: 'hint' }, 'Use the input above to add items to the list.'),
+    React.createElement('div', { className: 'hint' }, hintText),
+    errorMessage ? React.createElement('div', { className: 'error-message', role: 'alert' }, errorMessage) : null,
     React.createElement(
       'ul',
       { id: itemListId, hidden: isListHidden },
@@ -83,11 +96,29 @@ function MemoListPanel({ side, suffix }) {
 }
 
 export function App() {
+  const { useState } = React;
+  const [leftItems, setLeftItems] = useState([]);
+  const [rightItems, setRightItems] = useState([]);
+
   return React.createElement(
     'main',
     { className: 'app-shell' },
-    React.createElement(MemoListPanel, { side: 'left', suffix: '' }),
-    React.createElement(MemoListPanel, { side: 'right', suffix: 'right' })
+    React.createElement(MemoListPanel, {
+      side: 'left',
+      suffix: '',
+      items: leftItems,
+      setItems: setLeftItems,
+      hintText: 'Use the input above to add items to the list.',
+    }),
+    React.createElement(MemoListPanel, {
+      side: 'right',
+      suffix: 'right',
+      items: rightItems,
+      setItems: setRightItems,
+      hintText: 'Only items already shown in the left list can be added here.',
+      validationItems: leftItems,
+      validationMessage: 'Add failed: the item must already exist in the left list.',
+    })
   );
 }
 

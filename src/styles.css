@@ -79,6 +79,11 @@ ul {
   font-size: 12px;
 }
 
+.error-message {
+  color: #b71c1c;
+  font-size: 12px;
+}
+
 .list-actions {
   display: flex;
   align-items: center;
