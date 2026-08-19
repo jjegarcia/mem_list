@@ -64,10 +64,28 @@ ul {
   font-size: 12px;
 }
 
-.clear-btn {
+.list-actions {
   position: fixed;
   bottom: 16px;
   left: 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.hide-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: #222;
+  font-size: 14px;
+}
+
+.hide-toggle input {
+  margin: 0;
+}
+
+.clear-btn {
   background: #d93025;
 }
 

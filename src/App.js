@@ -2,6 +2,7 @@ export function App() {
   const { useState } = React;
   const [value, setValue] = useState('');
   const [items, setItems] = useState([]);
+  const [isListHidden, setIsListHidden] = useState(false);
 
   function addItem() {
     const trimmed = value.trim();
@@ -13,6 +14,10 @@ export function App() {
 
   function clearList() {
     setItems([]);
+  }
+
+  function handleListVisibilityChange(event) {
+    setIsListHidden(event.target.checked);
   }
 
   function handleKeyDown(event) {
@@ -45,13 +50,28 @@ export function App() {
     React.createElement('div', { className: 'hint' }, 'Use the input above to add items to the list.'),
     React.createElement(
       'ul',
-      { id: 'itemList' },
+      { id: 'itemList', hidden: isListHidden },
       items.map((item, index) => React.createElement('li', { key: `${item}-${index}` }, item))
     ),
     React.createElement(
-      'button',
-      { id: 'clearButton', type: 'button', onClick: clearList, className: 'clear-btn' },
-      'Clear List'
+      'div',
+      { className: 'list-actions' },
+      React.createElement(
+        'label',
+        { className: 'hide-toggle', htmlFor: 'hideListCheckbox' },
+        React.createElement('input', {
+          id: 'hideListCheckbox',
+          type: 'checkbox',
+          checked: isListHidden,
+          onChange: handleListVisibilityChange,
+        }),
+        React.createElement('span', null, 'Hide List')
+      ),
+      React.createElement(
+        'button',
+        { id: 'clearButton', type: 'button', onClick: clearList, className: 'clear-btn' },
+        'Clear List'
+      )
     )
   );
 }
