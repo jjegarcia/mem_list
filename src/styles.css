@@ -9,13 +9,26 @@ body {
   background: #f7f7f8;
 }
 
-.app {
-  position: absolute;
+.app-shell {
+  min-height: 100vh;
+}
+
+.memo-panel {
+  position: fixed;
   top: 16px;
-  left: 16px;
+  bottom: 16px;
+  width: 340px;
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.memo-panel-left {
+  left: 16px;
+}
+
+.memo-panel-right {
+  right: 16px;
 }
 
 .controls {
@@ -57,6 +70,8 @@ ul {
   margin: 0;
   padding-left: 20px;
   color: #222;
+  flex: 1;
+  overflow: auto;
 }
 
 .hint {
@@ -65,12 +80,10 @@ ul {
 }
 
 .list-actions {
-  position: fixed;
-  bottom: 16px;
-  left: 16px;
   display: flex;
   align-items: center;
   gap: 12px;
+  margin-top: auto;
 }
 
 .hide-toggle {
@@ -91,5 +104,25 @@ ul {
 
 .clear-btn:hover {
   background: #b71c1c;
+}
+
+@media (max-width: 760px) {
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px;
+    box-sizing: border-box;
+  }
+
+  .memo-panel {
+    position: static;
+    width: auto;
+  }
+
+  ul {
+    flex: none;
+    overflow: visible;
+  }
 }
 

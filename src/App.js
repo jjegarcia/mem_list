@@ -1,8 +1,14 @@
-export function App() {
+function MemoListPanel({ side, suffix }) {
   const { useState } = React;
   const [value, setValue] = useState('');
   const [items, setItems] = useState([]);
   const [isListHidden, setIsListHidden] = useState(false);
+  const panelClassName = `memo-panel memo-panel-${side}`;
+  const memoInputId = suffix ? `memoInput-${suffix}` : 'memoInput';
+  const addButtonId = suffix ? `addButton-${suffix}` : 'addButton';
+  const itemListId = suffix ? `itemList-${suffix}` : 'itemList';
+  const hideListCheckboxId = suffix ? `hideListCheckbox-${suffix}` : 'hideListCheckbox';
+  const clearButtonId = suffix ? `clearButton-${suffix}` : 'clearButton';
 
   function addItem() {
     const trimmed = value.trim();
@@ -27,13 +33,13 @@ export function App() {
   }
 
   return React.createElement(
-    'main',
-    { className: 'app' },
+    'section',
+    { className: panelClassName },
     React.createElement(
       'div',
       { className: 'controls' },
       React.createElement('input', {
-        id: 'memoInput',
+        id: memoInputId,
         type: 'text',
         value,
         onChange: (event) => setValue(event.target.value),
@@ -43,14 +49,14 @@ export function App() {
       }),
       React.createElement(
         'button',
-        { id: 'addButton', type: 'button', onClick: addItem },
+        { id: addButtonId, type: 'button', onClick: addItem },
         'Add'
       )
     ),
     React.createElement('div', { className: 'hint' }, 'Use the input above to add items to the list.'),
     React.createElement(
       'ul',
-      { id: 'itemList', hidden: isListHidden },
+      { id: itemListId, hidden: isListHidden },
       items.map((item, index) => React.createElement('li', { key: `${item}-${index}` }, item))
     ),
     React.createElement(
@@ -58,9 +64,9 @@ export function App() {
       { className: 'list-actions' },
       React.createElement(
         'label',
-        { className: 'hide-toggle', htmlFor: 'hideListCheckbox' },
+        { className: 'hide-toggle', htmlFor: hideListCheckboxId },
         React.createElement('input', {
-          id: 'hideListCheckbox',
+          id: hideListCheckboxId,
           type: 'checkbox',
           checked: isListHidden,
           onChange: handleListVisibilityChange,
@@ -69,10 +75,19 @@ export function App() {
       ),
       React.createElement(
         'button',
-        { id: 'clearButton', type: 'button', onClick: clearList, className: 'clear-btn' },
+        { id: clearButtonId, type: 'button', onClick: clearList, className: 'clear-btn' },
         'Clear List'
       )
     )
+  );
+}
+
+export function App() {
+  return React.createElement(
+    'main',
+    { className: 'app-shell' },
+    React.createElement(MemoListPanel, { side: 'left', suffix: '' }),
+    React.createElement(MemoListPanel, { side: 'right', suffix: 'right' })
   );
 }
 
