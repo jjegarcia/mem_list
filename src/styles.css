@@ -74,6 +74,10 @@ ul {
   overflow: auto;
 }
 
+.missing-item {
+  color: #9aa0a6;
+}
+
 .hint {
   color: #666;
   font-size: 12px;
