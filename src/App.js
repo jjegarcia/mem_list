@@ -1,4 +1,32 @@
-function MemoListPanel({ side, suffix, items, setItems, hintText, validationItems, validationMessage }) {
+const LEFT_LIST_COOKIE_NAME = 'mem_list_left_items';
+const LEFT_LIST_COOKIE_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+function normalizeItems(items) {
+  return items.map((item) => item.trim()).filter(Boolean);
+}
+
+function getCookieValue(cookieName) {
+  const cookiePrefix = `${cookieName}=`;
+  const cookieEntry = document.cookie
+    .split('; ')
+    .find((entry) => entry.startsWith(cookiePrefix));
+
+  return cookieEntry ? cookieEntry.slice(cookiePrefix.length) : '';
+}
+
+function MemoListPanel({
+  side,
+  suffix,
+  items,
+  setItems,
+  hintText,
+  validationItems,
+  validationMessage,
+  onSaveItems,
+  isSaving,
+  statusMessage,
+  statusTone,
+}) {
   const { useState } = React;
   const [value, setValue] = useState('');
   const [isListHidden, setIsListHidden] = useState(false);
@@ -6,6 +34,7 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
   const panelClassName = `memo-panel memo-panel-${side}`;
   const memoInputId = suffix ? `memoInput-${suffix}` : 'memoInput';
   const addButtonId = suffix ? `addButton-${suffix}` : 'addButton';
+  const saveButtonId = suffix ? `saveButton-${suffix}` : 'saveButton';
   const itemListId = suffix ? `itemList-${suffix}` : 'itemList';
   const hideListCheckboxId = suffix ? `hideListCheckbox-${suffix}` : 'hideListCheckbox';
   const clearButtonId = suffix ? `clearButton-${suffix}` : 'clearButton';
@@ -89,15 +118,24 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
   }
 
   function addItem() {
-    const trimmed = value.trim();
-    if (!trimmed) return;
+    const parsedItems = value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
 
-    if (validationItems && !validationItems.includes(trimmed)) {
+    if (!parsedItems.length) return;
+
+    if (validationItems && parsedItems.some((item) => !validationItems.includes(item))) {
       setErrorMessage(validationMessage);
       return;
     }
 
-    setItems((currentItems) => insertItemAtMatchingPosition(currentItems, trimmed));
+    setItems((currentItems) =>
+      parsedItems.reduce(
+        (updatedItems, item) => insertItemAtMatchingPosition(updatedItems, item),
+        currentItems
+      )
+    );
     setValue('');
     setErrorMessage('');
   }
@@ -143,9 +181,33 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
         'button',
         { id: addButtonId, type: 'button', onClick: addItem },
         'Add'
-      )
+      ),
+      onSaveItems
+        ? React.createElement(
+            'button',
+            {
+              id: saveButtonId,
+              type: 'button',
+              onClick: onSaveItems,
+              className: 'secondary-btn',
+              disabled: isSaving,
+            },
+            isSaving ? 'Saving...' : 'Save Cookie'
+          )
+        : null
     ),
     React.createElement('div', { className: 'hint' }, hintText),
+    statusMessage
+      ? React.createElement(
+          'div',
+          {
+            className: `status-message${statusTone ? ` status-message-${statusTone}` : ''}`,
+            role: 'status',
+            'aria-live': 'polite',
+          },
+          statusMessage
+        )
+      : null,
     errorMessage ? React.createElement('div', { className: 'error-message', role: 'alert' }, errorMessage) : null,
     React.createElement(
       'ul',
@@ -186,9 +248,95 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
 }
 
 export function App() {
-  const { useState } = React;
+  const { useEffect, useState } = React;
   const [leftItems, setLeftItems] = useState([]);
   const [rightItems, setRightItems] = useState([]);
+  const [leftListStatus, setLeftListStatus] = useState('Loading left list from cookie...');
+  const [leftListStatusTone, setLeftListStatusTone] = useState('loading');
+  const [isSavingLeftList, setIsSavingLeftList] = useState(false);
+
+  function alignItemsToReference(currentItems, referenceItems) {
+    const remainingCounts = {};
+
+    referenceItems.forEach((item) => {
+      remainingCounts[item] = (remainingCounts[item] || 0) + 1;
+    });
+
+    return currentItems.filter((item) => {
+      if (!remainingCounts[item]) {
+        return false;
+      }
+
+      remainingCounts[item] -= 1;
+      return true;
+    });
+  }
+
+  function loadLeftListFromCookie() {
+    setLeftListStatus('Loading left list from cookie...');
+    setLeftListStatusTone('loading');
+
+    try {
+      const cookieValue = getCookieValue(LEFT_LIST_COOKIE_NAME);
+
+      if (!cookieValue) {
+        setLeftItems([]);
+        setLeftListStatus('No saved cookie found. Started with an empty left list.');
+        setLeftListStatusTone('success');
+        return;
+      }
+
+      const payload = JSON.parse(decodeURIComponent(cookieValue));
+      const loadedItems = Array.isArray(payload) ? payload : payload.items;
+
+      if (!Array.isArray(loadedItems) || loadedItems.some((item) => typeof item !== 'string')) {
+        console.error('Failed to load left list cookie: cookie JSON must contain an array of strings.');
+        setLeftItems([]);
+        setLeftListStatus('Saved cookie was invalid. Started with an empty left list.');
+        setLeftListStatusTone('error');
+        return;
+      }
+
+      const normalizedItems = normalizeItems(loadedItems);
+
+      setLeftItems(normalizedItems);
+      setLeftListStatus(`Loaded ${normalizedItems.length} item${normalizedItems.length === 1 ? '' : 's'} from cookie.`);
+      setLeftListStatusTone('success');
+    } catch (error) {
+      console.error('Failed to load left list cookie:', error);
+      setLeftItems([]);
+      setLeftListStatus('Unable to read the saved cookie. Started with an empty left list.');
+      setLeftListStatusTone('error');
+    }
+  }
+
+  function saveLeftListToCookie() {
+    setIsSavingLeftList(true);
+    setLeftListStatus('Saving left list to cookie...');
+    setLeftListStatusTone('loading');
+
+    try {
+      const payload = JSON.stringify({ items: leftItems }, null, 2);
+      document.cookie = `${LEFT_LIST_COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=${LEFT_LIST_COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
+
+      setLeftListStatus(`Saved ${leftItems.length} item${leftItems.length === 1 ? '' : 's'} to cookie.`);
+      setLeftListStatusTone('success');
+    } catch (error) {
+      console.error('Failed to save left list cookie:', error);
+      setLeftListStatus('Unable to save the left list to cookie.');
+      setLeftListStatusTone('error');
+    } finally {
+      setIsSavingLeftList(false);
+    }
+  }
+
+  useEffect(() => {
+    loadLeftListFromCookie();
+  }, []);
+
+  useEffect(() => {
+    setRightItems((currentItems) => alignItemsToReference(currentItems, leftItems));
+  }, [leftItems]);
 
   return React.createElement(
     'main',
@@ -199,6 +347,10 @@ export function App() {
       items: leftItems,
       setItems: setLeftItems,
       hintText: 'Use the input above to add items to the list.',
+      onSaveItems: saveLeftListToCookie,
+      isSaving: isSavingLeftList,
+      statusMessage: leftListStatus,
+      statusTone: leftListStatusTone,
     }),
     React.createElement(MemoListPanel, {
       side: 'right',

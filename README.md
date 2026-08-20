@@ -1,12 +1,20 @@
 # mem_list
 
-A minimal React page with a text field and an Add button positioned at the top left of the page.
+A minimal React page with mirrored left/right memo lists.
 
 ## Files
 
 - `index.html` loads React and ReactDOM from a CDN
 - `src/App.js` contains the React component logic
 - `src/main.js` mounts the app
+
+## Behavior
+
+- The left list loads automatically from a browser cookie when the page starts.
+- If no saved cookie exists, the left list starts empty.
+- Words separated by spaces in the add field are added as separate list items.
+- The `Save Cookie` button stores the current left list as JSON inside a browser cookie.
+- The right list can only add items that already exist in the left list.
 
 ## Run locally
 
