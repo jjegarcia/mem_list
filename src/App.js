@@ -22,9 +22,7 @@ function MemoListPanel({
   hintText,
   validationItems,
   validationMessage,
-  onLoadItems,
   onSaveItems,
-  isLoading,
   isSaving,
   statusMessage,
   statusTone,
@@ -36,7 +34,6 @@ function MemoListPanel({
   const panelClassName = `memo-panel memo-panel-${side}`;
   const memoInputId = suffix ? `memoInput-${suffix}` : 'memoInput';
   const addButtonId = suffix ? `addButton-${suffix}` : 'addButton';
-  const loadButtonId = suffix ? `loadButton-${suffix}` : 'loadButton';
   const saveButtonId = suffix ? `saveButton-${suffix}` : 'saveButton';
   const itemListId = suffix ? `itemList-${suffix}` : 'itemList';
   const hideListCheckboxId = suffix ? `hideListCheckbox-${suffix}` : 'hideListCheckbox';
@@ -185,19 +182,6 @@ function MemoListPanel({
         { id: addButtonId, type: 'button', onClick: addItem },
         'Add'
       ),
-      onLoadItems
-        ? React.createElement(
-            'button',
-            {
-              id: loadButtonId,
-              type: 'button',
-              onClick: onLoadItems,
-              className: 'secondary-btn',
-              disabled: isLoading,
-            },
-            isLoading ? 'Loading...' : 'Load Cookie'
-          )
-        : null,
       onSaveItems
         ? React.createElement(
             'button',
@@ -269,7 +253,6 @@ export function App() {
   const [rightItems, setRightItems] = useState([]);
   const [leftListStatus, setLeftListStatus] = useState('Loading left list from cookie...');
   const [leftListStatusTone, setLeftListStatusTone] = useState('loading');
-  const [isLoadingLeftList, setIsLoadingLeftList] = useState(false);
   const [isSavingLeftList, setIsSavingLeftList] = useState(false);
 
   function alignItemsToReference(currentItems, referenceItems) {
@@ -290,7 +273,6 @@ export function App() {
   }
 
   function loadLeftListFromCookie() {
-    setIsLoadingLeftList(true);
     setLeftListStatus('Loading left list from cookie...');
     setLeftListStatusTone('loading');
 
@@ -325,8 +307,6 @@ export function App() {
       setLeftItems([]);
       setLeftListStatus('Unable to read the saved cookie. Started with an empty left list.');
       setLeftListStatusTone('error');
-    } finally {
-      setIsLoadingLeftList(false);
     }
   }
 
@@ -367,9 +347,7 @@ export function App() {
       items: leftItems,
       setItems: setLeftItems,
       hintText: 'Use the input above to add items to the list.',
-      onLoadItems: loadLeftListFromCookie,
       onSaveItems: saveLeftListToCookie,
-      isLoading: isLoadingLeftList,
       isSaving: isSavingLeftList,
       statusMessage: leftListStatus,
       statusTone: leftListStatusTone,
