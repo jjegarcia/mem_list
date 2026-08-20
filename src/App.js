@@ -5,6 +5,10 @@ function normalizeItems(items) {
   return items.map((item) => item.trim()).filter(Boolean);
 }
 
+function normalizeItemKey(item) {
+  return item.toLowerCase();
+}
+
 function getCookieValue(cookieName) {
   const cookiePrefix = `${cookieName}=`;
   const cookieEntry = document.cookie
@@ -42,9 +46,10 @@ function MemoListPanel({
   function getOccurrenceIndex(listItems, item, occurrenceNumber) {
     let matchCount = 0;
     let lastMatchIndex = -1;
+    const targetKey = normalizeItemKey(item);
 
     for (let index = 0; index < listItems.length; index += 1) {
-      if (listItems[index] !== item) continue;
+      if (normalizeItemKey(listItems[index]) !== targetKey) continue;
 
       matchCount += 1;
       lastMatchIndex = index;
@@ -62,7 +67,8 @@ function MemoListPanel({
       return [...currentItems, nextItem];
     }
 
-    const currentOccurrenceCount = currentItems.filter((item) => item === nextItem).length;
+    const nextItemKey = normalizeItemKey(nextItem);
+    const currentOccurrenceCount = currentItems.filter((item) => normalizeItemKey(item) === nextItemKey).length;
     const targetLeftIndex = getOccurrenceIndex(validationItems, nextItem, currentOccurrenceCount + 1);
 
     if (targetLeftIndex === -1) {
@@ -71,8 +77,9 @@ function MemoListPanel({
 
     const seenOccurrences = {};
     const insertionIndex = currentItems.findIndex((currentItem) => {
-      seenOccurrences[currentItem] = (seenOccurrences[currentItem] || 0) + 1;
-      const currentLeftIndex = getOccurrenceIndex(validationItems, currentItem, seenOccurrences[currentItem]);
+      const currentItemKey = normalizeItemKey(currentItem);
+      seenOccurrences[currentItemKey] = (seenOccurrences[currentItemKey] || 0) + 1;
+      const currentLeftIndex = getOccurrenceIndex(validationItems, currentItem, seenOccurrences[currentItemKey]);
       return currentLeftIndex > targetLeftIndex;
     });
 
@@ -99,15 +106,17 @@ function MemoListPanel({
     const rightOccurrences = {};
 
     items.forEach((item) => {
-      rightOccurrences[item] = (rightOccurrences[item] || 0) + 1;
+      const itemKey = normalizeItemKey(item);
+      rightOccurrences[itemKey] = (rightOccurrences[itemKey] || 0) + 1;
     });
 
     const seenValidationOccurrences = {};
 
     return validationItems.map((item, index) => {
-      seenValidationOccurrences[item] = (seenValidationOccurrences[item] || 0) + 1;
+      const itemKey = normalizeItemKey(item);
+      seenValidationOccurrences[itemKey] = (seenValidationOccurrences[itemKey] || 0) + 1;
 
-      const isMissing = seenValidationOccurrences[item] > (rightOccurrences[item] || 0);
+      const isMissing = seenValidationOccurrences[itemKey] > (rightOccurrences[itemKey] || 0);
 
       return {
         key: `${item}-${index}`,
@@ -125,7 +134,7 @@ function MemoListPanel({
 
     if (!parsedItems.length) return;
 
-    if (validationItems && parsedItems.some((item) => !validationItems.includes(item))) {
+    if (validationItems && parsedItems.some((item) => getOccurrenceIndex(validationItems, item, 1) === -1)) {
       setErrorMessage(validationMessage);
       return;
     }
@@ -259,15 +268,18 @@ export function App() {
     const remainingCounts = {};
 
     referenceItems.forEach((item) => {
-      remainingCounts[item] = (remainingCounts[item] || 0) + 1;
+      const itemKey = normalizeItemKey(item);
+      remainingCounts[itemKey] = (remainingCounts[itemKey] || 0) + 1;
     });
 
     return currentItems.filter((item) => {
-      if (!remainingCounts[item]) {
+      const itemKey = normalizeItemKey(item);
+
+      if (!remainingCounts[itemKey]) {
         return false;
       }
 
-      remainingCounts[item] -= 1;
+      remainingCounts[itemKey] -= 1;
       return true;
     });
   }
