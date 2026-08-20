@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Static React demo for adding list items",
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",
