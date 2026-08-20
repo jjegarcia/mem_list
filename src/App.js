@@ -10,6 +10,84 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
   const hideListCheckboxId = suffix ? `hideListCheckbox-${suffix}` : 'hideListCheckbox';
   const clearButtonId = suffix ? `clearButton-${suffix}` : 'clearButton';
 
+  function getOccurrenceIndex(listItems, item, occurrenceNumber) {
+    let matchCount = 0;
+    let lastMatchIndex = -1;
+
+    for (let index = 0; index < listItems.length; index += 1) {
+      if (listItems[index] !== item) continue;
+
+      matchCount += 1;
+      lastMatchIndex = index;
+
+      if (matchCount === occurrenceNumber) {
+        return index;
+      }
+    }
+
+    return lastMatchIndex;
+  }
+
+  function insertItemAtMatchingPosition(currentItems, nextItem) {
+    if (!validationItems) {
+      return [...currentItems, nextItem];
+    }
+
+    const currentOccurrenceCount = currentItems.filter((item) => item === nextItem).length;
+    const targetLeftIndex = getOccurrenceIndex(validationItems, nextItem, currentOccurrenceCount + 1);
+
+    if (targetLeftIndex === -1) {
+      return [...currentItems, nextItem];
+    }
+
+    const seenOccurrences = {};
+    const insertionIndex = currentItems.findIndex((currentItem) => {
+      seenOccurrences[currentItem] = (seenOccurrences[currentItem] || 0) + 1;
+      const currentLeftIndex = getOccurrenceIndex(validationItems, currentItem, seenOccurrences[currentItem]);
+      return currentLeftIndex > targetLeftIndex;
+    });
+
+    if (insertionIndex === -1) {
+      return [...currentItems, nextItem];
+    }
+
+    return [
+      ...currentItems.slice(0, insertionIndex),
+      nextItem,
+      ...currentItems.slice(insertionIndex),
+    ];
+  }
+
+  function getRenderedListEntries() {
+    if (!validationItems) {
+      return items.map((item, index) => ({
+        key: `${item}-${index}`,
+        text: item,
+        isMissing: false,
+      }));
+    }
+
+    const rightOccurrences = {};
+
+    items.forEach((item) => {
+      rightOccurrences[item] = (rightOccurrences[item] || 0) + 1;
+    });
+
+    const seenValidationOccurrences = {};
+
+    return validationItems.map((item, index) => {
+      seenValidationOccurrences[item] = (seenValidationOccurrences[item] || 0) + 1;
+
+      const isMissing = seenValidationOccurrences[item] > (rightOccurrences[item] || 0);
+
+      return {
+        key: `${item}-${index}`,
+        text: isMissing ? '\u00A0' : item,
+        isMissing,
+      };
+    });
+  }
+
   function addItem() {
     const trimmed = value.trim();
     if (!trimmed) return;
@@ -19,7 +97,7 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
       return;
     }
 
-    setItems((currentItems) => [...currentItems, trimmed]);
+    setItems((currentItems) => insertItemAtMatchingPosition(currentItems, trimmed));
     setValue('');
     setErrorMessage('');
   }
@@ -38,6 +116,8 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
       addItem();
     }
   }
+
+  const renderedListEntries = getRenderedListEntries();
 
   return React.createElement(
     'section',
@@ -70,7 +150,17 @@ function MemoListPanel({ side, suffix, items, setItems, hintText, validationItem
     React.createElement(
       'ul',
       { id: itemListId, hidden: isListHidden },
-      items.map((item, index) => React.createElement('li', { key: `${item}-${index}` }, item))
+      renderedListEntries.map((entry) =>
+        React.createElement(
+          'li',
+          {
+            key: entry.key,
+            className: entry.isMissing ? 'missing-item' : undefined,
+            'aria-label': entry.isMissing ? 'Missing item from left list' : undefined,
+          },
+          entry.text
+        )
+      )
     ),
     React.createElement(
       'div',
