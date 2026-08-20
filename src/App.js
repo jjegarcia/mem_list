@@ -121,15 +121,24 @@ function MemoListPanel({
   }
 
   function addItem() {
-    const trimmed = value.trim();
-    if (!trimmed) return;
+    const parsedItems = value
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
 
-    if (validationItems && !validationItems.includes(trimmed)) {
+    if (!parsedItems.length) return;
+
+    if (validationItems && parsedItems.some((item) => !validationItems.includes(item))) {
       setErrorMessage(validationMessage);
       return;
     }
 
-    setItems((currentItems) => insertItemAtMatchingPosition(currentItems, trimmed));
+    setItems((currentItems) =>
+      parsedItems.reduce(
+        (updatedItems, item) => insertItemAtMatchingPosition(updatedItems, item),
+        currentItems
+      )
+    );
     setValue('');
     setErrorMessage('');
   }
