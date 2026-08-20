@@ -31,4 +31,6 @@ Then visit:
 ```text
 http://localhost:8000
 ```
+## Run Remotely
+https://jjegarcia.github.io/mem_list/
 
