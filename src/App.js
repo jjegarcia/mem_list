@@ -201,7 +201,7 @@ function MemoListPanel({
               className: 'secondary-btn',
               disabled: isSaving,
             },
-            isSaving ? 'Saving...' : 'Save Cookie'
+            isSaving ? 'Saving...' : 'Cookie'
           )
         : null
     ),

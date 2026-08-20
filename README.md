@@ -13,7 +13,7 @@ A minimal React page with mirrored left/right memo lists.
 - The left list loads automatically from a browser cookie when the page starts.
 - If no saved cookie exists, the left list starts empty.
 - Words separated by spaces in the add field are added as separate list items.
-- The `Save Cookie` button stores the current left list as JSON inside a browser cookie.
+- The `Cookie` button stores the current left list as JSON inside a browser cookie.
 - The right list can only add items that already exist in the left list.
 
 ## Run locally
