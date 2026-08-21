@@ -91,6 +91,10 @@ ul {
   gap: 8px;
 }
 
+ul[hidden] {
+  display: none;
+}
+
 li {
   border: 1px solid #d9dee6;
   border-radius: 10px;
