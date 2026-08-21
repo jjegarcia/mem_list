@@ -96,6 +96,32 @@ li {
   border-radius: 10px;
   background: #fff;
   padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.list-item-text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.item-delete-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  color: #d93025;
+  border: 1px solid #f3c1bd;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+.item-delete-btn:hover {
+  background: #fdecea;
 }
 
 .missing-item {

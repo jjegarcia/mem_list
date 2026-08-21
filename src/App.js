@@ -27,6 +27,7 @@ function MemoListPanel({
   validationItems,
   validationMessage,
   onSaveItems,
+  onDeleteItem,
   isSaving,
   statusMessage,
   statusTone,
@@ -100,6 +101,7 @@ function MemoListPanel({
         key: `${item}-${index}`,
         text: item,
         isMissing: false,
+        sourceIndex: index,
       }));
     }
 
@@ -122,6 +124,7 @@ function MemoListPanel({
         key: `${item}-${index}`,
         text: isMissing ? '\u00A0' : item,
         isMissing,
+        sourceIndex: index,
       };
     });
   }
@@ -229,7 +232,20 @@ function MemoListPanel({
             className: entry.isMissing ? 'missing-item' : undefined,
             'aria-label': entry.isMissing ? 'Missing item from left list' : undefined,
           },
-          entry.text
+          React.createElement('span', { className: 'list-item-text' }, entry.text),
+          onDeleteItem && !entry.isMissing
+            ? React.createElement(
+                'button',
+                {
+                  type: 'button',
+                  className: 'item-delete-btn',
+                  onClick: () => onDeleteItem(entry.sourceIndex),
+                  'aria-label': `Delete ${entry.text}`,
+                },
+                React.createElement('span', { 'aria-hidden': 'true' }, '🗑'),
+                React.createElement('span', null, 'Delete')
+              )
+            : null
         )
       )
     ),
@@ -281,6 +297,20 @@ export function App() {
 
       remainingCounts[itemKey] -= 1;
       return true;
+    });
+  }
+
+  function removeMatchingOccurrence(items, targetItem, targetOccurrence) {
+    const targetKey = normalizeItemKey(targetItem);
+    let seenOccurrences = 0;
+
+    return items.filter((item) => {
+      if (normalizeItemKey(item) !== targetKey) {
+        return true;
+      }
+
+      seenOccurrences += 1;
+      return seenOccurrences !== targetOccurrence;
     });
   }
 
@@ -342,6 +372,31 @@ export function App() {
     }
   }
 
+  function deleteLeftItem(itemIndex) {
+    setLeftItems((currentLeftItems) => {
+      const itemToDelete = currentLeftItems[itemIndex];
+
+      if (typeof itemToDelete !== 'string') {
+        return currentLeftItems;
+      }
+
+      const targetKey = normalizeItemKey(itemToDelete);
+      let targetOccurrence = 0;
+
+      for (let index = 0; index <= itemIndex; index += 1) {
+        if (normalizeItemKey(currentLeftItems[index]) === targetKey) {
+          targetOccurrence += 1;
+        }
+      }
+
+      setRightItems((currentRightItems) =>
+        removeMatchingOccurrence(currentRightItems, itemToDelete, targetOccurrence)
+      );
+
+      return currentLeftItems.filter((_, index) => index !== itemIndex);
+    });
+  }
+
   useEffect(() => {
     loadLeftListFromCookie();
   }, []);
@@ -360,6 +415,7 @@ export function App() {
       setItems: setLeftItems,
       hintText: 'Use the input above to add items to the list.',
       onSaveItems: saveLeftListToCookie,
+      onDeleteItem: deleteLeftItem,
       isSaving: isSavingLeftList,
       statusMessage: leftListStatus,
       statusTone: leftListStatusTone,
