@@ -328,7 +328,7 @@ export function App() {
     setLeftListStatusTone('loading');
 
     try {
-      const payload = JSON.stringify({ items: leftItems }, null, 2);
+      const payload = JSON.stringify(normalizeItems(leftItems), null, 2);
       document.cookie = `${LEFT_LIST_COOKIE_NAME}=${encodeURIComponent(payload)}; max-age=${LEFT_LIST_COOKIE_MAX_AGE_SECONDS}; path=/; SameSite=Lax`;
 
       setLeftListStatus(`Saved ${leftItems.length} item${leftItems.length === 1 ? '' : 's'} to cookie.`);
