@@ -81,10 +81,21 @@ button:disabled {
 
 ul {
   margin: 0;
-  padding-left: 20px;
+  padding: 0;
+  list-style: none;
   color: #222;
   flex: 1;
   overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+li {
+  border: 1px solid #d9dee6;
+  border-radius: 10px;
+  background: #fff;
+  padding: 10px 12px;
 }
 
 .missing-item {
