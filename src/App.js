@@ -168,6 +168,10 @@ function MemoListPanel({
   }
 
   const renderedListEntries = getRenderedListEntries();
+  const guessedCount = validationItems
+    ? renderedListEntries.filter((entry) => !entry.isMissing).length
+    : null;
+  const totalCount = validationItems ? validationItems.length : null;
 
   return React.createElement(
     'section',
@@ -249,6 +253,16 @@ function MemoListPanel({
         )
       )
     ),
+    validationItems
+      ? React.createElement(
+          'div',
+          {
+            className: 'list-summary',
+            'aria-live': 'polite',
+          },
+          `${guessedCount}/${totalCount}`
+        )
+      : null,
     React.createElement(
       'div',
       { className: 'list-actions' },
