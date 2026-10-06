@@ -158,6 +158,12 @@ li {
   color: #b71c1c;
 }
 
+.list-summary {
+  color: #5f6368;
+  font-size: 13px;
+  text-align: right;
+}
+
 .list-actions {
   display: flex;
   align-items: center;
