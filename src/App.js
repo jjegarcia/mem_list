@@ -212,6 +212,16 @@ function MemoListPanel({
           )
         : null
     ),
+    validationItems
+      ? React.createElement(
+          'div',
+          {
+            className: 'list-summary',
+            'aria-live': 'polite',
+          },
+          `${guessedCount}/${totalCount}`
+        )
+      : null,
     React.createElement('div', { className: 'hint' }, hintText),
     statusMessage
       ? React.createElement(
@@ -253,16 +263,6 @@ function MemoListPanel({
         )
       )
     ),
-    validationItems
-      ? React.createElement(
-          'div',
-          {
-            className: 'list-summary',
-            'aria-live': 'polite',
-          },
-          `${guessedCount}/${totalCount}`
-        )
-      : null,
     React.createElement(
       'div',
       { className: 'list-actions' },
